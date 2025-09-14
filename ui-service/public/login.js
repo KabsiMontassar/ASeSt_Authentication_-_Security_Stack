@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Get login flow
             showMessage('messages', 'Initializing login...', 'info');
 
-            const flowResponse = await fetch('/api/login-flow');
+            const flowResponse = await fetch('http://localhost:4433/self-service/login/browser');
             if (!flowResponse.ok) {
                 throw new Error('Failed to initialize login flow');
             }
@@ -34,27 +34,30 @@ document.addEventListener('DOMContentLoaded', () => {
             // Submit login
             showMessage('messages', 'Signing you in...', 'info');
 
-            const loginResponse = await fetch('/api/login', {
+            const formData = new URLSearchParams();
+            formData.append('method', 'password');
+            formData.append('password_identifier', email);
+            formData.append('password', password);
+            formData.append('csrf_token', csrfToken);
+
+            const loginResponse = await fetch('http://localhost:4433/self-service/login?flow=' + flowId, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
+                    'Content-Type': 'application/x-www-form-urlencoded',
                 },
-                body: JSON.stringify({
-                    flow: flowId,
-                    email: email,
-                    password: password,
-                    csrf_token: csrfToken
-                })
+                body: formData,
+                redirect: 'manual'
             });
+
+            if (loginResponse.status === 302) {
+                const location = loginResponse.headers.get('location');
+                window.location = location;
+                return;
+            }
 
             const loginData = await loginResponse.json();
 
             if (loginResponse.ok) {
-                // Set session cookie
-                if (loginData.session_token) {
-                    setCookie('ory_kratos_session', loginData.session_token);
-                }
-
                 showMessage('messages', 'Login successful! Redirecting...', 'success');
 
                 // Redirect to dashboard after a short delay

@@ -75,8 +75,6 @@ serve:
         - Content-Type
         - X-Session-Token
         - X-CSRF-Token
-    csrf:
-      enabled: false
 
 session:
   cookie:

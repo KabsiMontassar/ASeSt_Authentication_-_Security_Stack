@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Get registration flow
             showMessage('messages', 'Initializing registration...', 'info');
 
-            const flowResponse = await fetch('/api/registration-flow');
+            const flowResponse = await fetch('http://localhost:4433/self-service/registration/browser');
             if (!flowResponse.ok) {
                 throw new Error('Failed to initialize registration flow');
             }
@@ -47,18 +47,26 @@ document.addEventListener('DOMContentLoaded', () => {
             // Submit registration
             showMessage('messages', 'Creating your account...', 'info');
 
-            const registrationResponse = await fetch('/api/registration', {
+            const formData = new URLSearchParams();
+            formData.append('method', 'password');
+            formData.append('traits.email', email);
+            formData.append('password', password);
+            formData.append('csrf_token', csrfToken);
+
+            const registrationResponse = await fetch('http://localhost:4433/self-service/registration?flow=' + flowId, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
+                    'Content-Type': 'application/x-www-form-urlencoded',
                 },
-                body: JSON.stringify({
-                    flow: flowId,
-                    email: email,
-                    password: password,
-                    csrf_token: csrfToken
-                })
+                body: formData,
+                redirect: 'manual'
             });
+
+            if (registrationResponse.status === 302) {
+                const location = registrationResponse.headers.get('location');
+                window.location = location;
+                return;
+            }
 
             const registrationData = await registrationResponse.json();
 
