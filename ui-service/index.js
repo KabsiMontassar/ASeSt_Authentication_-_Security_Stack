@@ -1,6 +1,30 @@
 const express = require('express');
 const axios = require('axios');
-const cookieParser = require('cookie-parser');
+consapp.post('/api/registration', async (req, res) => {
+  try {
+    const { flow, email, password, csrf_token } = req.body;
+
+    // Send as form data instead of JSON for CSRF compatibility
+    const formData = new URLSearchParams();
+    formData.append('method', 'password');
+    formData.append('password', password);
+    formData.append('traits.email', email);
+    formData.append('csrf_token', csrf_token);
+
+    const response = await axios.post(
+      `${KRATOS_PUBLIC_URL}/self-service/registration?flow=${flow}`,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
+      }
+    );
+    res.json(response.data);
+  } catch (error) {
+    res.status(error.response?.status || 500).json(error.response?.data || { error: error.message });
+  }
+});r = require('cookie-parser');
 const path = require('path');
 
 const app = express();
@@ -75,10 +99,22 @@ app.get('/api/registration-flow', async (req, res) => {
 app.post('/api/login', async (req, res) => {
   try {
     const { flow, email, password, csrf_token } = req.body;
+
+    // Send as form data instead of JSON for CSRF compatibility
+    const formData = new URLSearchParams();
+    formData.append('method', 'password');
+    formData.append('password', password);
+    formData.append('password_identifier', email);
+    formData.append('csrf_token', csrf_token);
+
     const response = await axios.post(
       `${KRATOS_PUBLIC_URL}/self-service/login?flow=${flow}`,
-      { method: 'password', password, password_identifier: email, csrf_token },
-      { headers: { 'Content-Type': 'application/json' } }
+      formData,
+      {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
+      }
     );
     res.json(response.data);
   } catch (error) {
