@@ -2,13 +2,13 @@
 
 # Load environment variables
 if [ -f .env ]; then
-  export $(cat .env | xargs)
+  export $(cat .env | grep -v '^#' | xargs)
 fi
 
 echo "Waiting for services to be ready..."
 
 # Wait for PostgreSQL
-until docker-compose exec -T postgres pg_isready -U ${POSTGRES_USER}; do
+until docker compose exec -T postgres pg_isready -U ${POSTGRES_USER}; do
   echo "Waiting for PostgreSQL..."
   sleep 2
 done
@@ -30,7 +30,7 @@ curl -X POST -H "X-Vault-Token: ${VAULT_TOKEN}" -d '{"data": {"api_key": "sample
 echo "Vault initialized with sample secrets."
 
 # Create sample database table
-docker-compose exec -T postgres psql -U ${POSTGRES_USER} -d ${POSTGRES_DB} -c "
+docker compose exec -T postgres psql -U ${POSTGRES_USER} -d ${POSTGRES_DB} -c "
 CREATE TABLE IF NOT EXISTS users (
   id VARCHAR(255) PRIMARY KEY,
   email VARCHAR(255) UNIQUE,

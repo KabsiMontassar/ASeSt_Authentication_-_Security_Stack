@@ -2,14 +2,14 @@
 
 # Load environment variables
 if [ -f .env ]; then
-  export $(cat .env | xargs)
+  export $(cat .env | grep -v '^#' | xargs)
 fi
 
 echo "Testing ASeSt stack..."
 
 # Test PostgreSQL connection
 echo "Testing PostgreSQL..."
-docker-compose exec -T postgres psql -U ${POSTGRES_USER} -d ${POSTGRES_DB} -c "SELECT 1;" > /dev/null
+docker compose exec -T postgres psql -U ${POSTGRES_USER} -d ${POSTGRES_DB} -c "SELECT 1;" > /dev/null
 if [ $? -eq 0 ]; then
   echo "✅ PostgreSQL is running"
 else
