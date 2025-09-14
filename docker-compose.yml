@@ -118,6 +118,22 @@ services:
     networks:
       - asest
 
+  ui-service:
+    build: ./ui-service
+    image: asest-ui-service:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - KRATOS_PUBLIC_URL=http://kratos:4433
+      - KRATOS_ADMIN_URL=http://kratos:4434
+      - OATHKEEPER_URL=http://oathkeeper:4455
+      - SESSION_COOKIE_NAME=ory_kratos_session
+    depends_on:
+      - kratos
+      - oathkeeper
+    networks:
+      - asest
+
 volumes:
   postgres_data:
   vault_data:
