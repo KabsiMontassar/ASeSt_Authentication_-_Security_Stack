@@ -1,7 +1,8 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const jwksClient = require('jwks-rsa');
-const { newEnforcer, FileAdapter } = require('casbin');
+const { newEnforcer } = require('casbin');
+const { FileAdapter } = require('casbin/file-adapter');
 const { Client } = require('pg');
 const vault = require('node-vault')();
 
@@ -26,7 +27,7 @@ function getKey(header, callback) {
 let enforcer;
 
 async function initCasbin() {
-  const adapter = await FileAdapter.newAdapter('/app/config/casbin/policy.csv');
+  const adapter = new FileAdapter('/app/config/casbin/policy.csv');
   enforcer = await newEnforcer('/app/config/casbin/model.conf', adapter);
 }
 
