@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     registrationForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+        console.log('Registration form submitted - using direct Kratos submission');
 
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
@@ -46,6 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Submit registration
             showMessage('messages', 'Creating your account...', 'info');
+            console.log('Submitting registration directly to Kratos:', 'http://localhost:4433/self-service/registration?flow=' + flowId);
 
             const formData = new URLSearchParams();
             formData.append('method', 'password');
