@@ -8,7 +8,29 @@
 
 **Enterprise-Grade Security Tools**:
 
-- **Ory Kratos** (identity management, login, registration, recovery)
+- **Ory Kratos** (identity manageme### Architecture Details
+
+### Stack Components
+
+1. **UI Service**: React-style web interface for user registration, login, and dashboard
+2. **Ory Kratos**: Handles user identity, registration, login, and recovery
+3. **Ory Hydra**: Provides OAuth2 and OpenID Connect functionality
+4. **Ory Oathkeeper**: Acts as an API gateway, validating JWTs
+5. **Vault**: Manages dynamic secrets and credentials
+6. **Casbin**: Enforces fine-grained authorization policies
+7. **PostgreSQL**: Stores data for Ory components and Casbin policies
+8. **Sample Microservice**: Demonstrates integration of all components
+
+### User Experience Flow
+
+1. **Registration**: Visit [http://localhost:3000](http://localhost:3000) → Register → Auto-login to dashboard
+2. **Login**: Secure authentication with CSRF protection and proper session management
+3. **Dashboard**: View user profile, access protected APIs, see permissions
+4. **Logout**: Clean session termination with cookie clearing
+5. **API Access**: Protected endpoints demonstrate JWT validation through Oathkeeper
+
+### Data Flowgistration, recovery)
+
 - **Ory Hydra** (OAuth2 & OpenID Connect provider, SSO)
 - **Ory Oathkeeper** (API gateway with JWT validation)
 - **Vault** (dynamic secrets management)
@@ -99,6 +121,14 @@ Demonstrates **full-cycle security expertise** – from user identity (Ory Krato
 - Git
 - curl (for testing)
 
+### Quick Demo
+
+1. **Start the services**: `docker compose up -d`
+2. **Initialize**: `./init.sh`
+3. **Open the UI**: [http://localhost:3000](http://localhost:3000)
+4. **Register a new account** and explore the dashboard
+5. **Test protected APIs** and see real-time authentication in action
+
 ### Environment Configuration
 
 All sensitive configuration is stored in the `.env` file. The provided configuration works out-of-the-box for development:
@@ -132,7 +162,7 @@ cp .env .env.local
    # Run database migrations first
    docker compose up -d postgres
    docker compose up kratos-migrate hydra-migrate
-   
+
    # Start all services
    docker compose up -d
    ```
@@ -154,10 +184,11 @@ cp .env .env.local
 
 Once running, access the services at:
 
-- **Kratos Admin API**: [http://localhost:4433](http://localhost:4433)
-- **Kratos Public API**: [http://localhost:4434](http://localhost:4434)
-- **Hydra Admin API**: [http://localhost:4444](http://localhost:4444)
-- **Hydra Public API**: [http://localhost:4445](http://localhost:4445)
+- **UI Service (Main App)**: [http://localhost:3000](http://localhost:3000) - _Start here for registration/login_
+- **Kratos Public API**: [http://localhost:4433](http://localhost:4433)
+- **Kratos Admin API**: [http://localhost:4434](http://localhost:4434)
+- **Hydra Public API**: [http://localhost:4444](http://localhost:4444)
+- **Hydra Admin API**: [http://localhost:4445](http://localhost:4445)
 - **Oathkeeper Proxy**: [http://localhost:4455](http://localhost:4455)
 - **Oathkeeper API**: [http://localhost:4456](http://localhost:4456)
 - **Vault UI**: [http://localhost:8210/ui](http://localhost:8210/ui) (Token: `root`)
@@ -206,7 +237,7 @@ Expected output:
 
 ```text
 ✅ PostgreSQL is running
-✅ Vault is running and has secrets  
+✅ Vault is running and has secrets
 ✅ Kratos is running
 ✅ Hydra is running
 ✅ Oathkeeper is running
@@ -254,6 +285,38 @@ Expected output:
 - Fine-grained authorization
 - Audit logging
 - MFA support (configurable)
+- **CSRF protection** with proper token handling
+- **Secure cookie management** with domain-specific settings
+- **Session validation** across services
+
+## Troubleshooting
+
+### Common Issues
+
+**CSRF Token Mismatch:**
+
+- Fixed with proper Axios configuration and withCredentials: true
+- Ensure cookies are being sent with all requests
+
+**Login/Logout Issues:**
+
+- Updated to use consistent Axios instead of fetch
+- Enhanced cookie clearing on logout
+- Added session validation after login
+
+**Protected API Access Denied:**
+
+- Improved error handling and fallback responses
+- Added debugging logs for session validation
+- UI shows detailed status information
+
+### Recent Improvements
+
+✅ **Fixed CSRF token handling** - Proper cookie management with Axios  
+✅ **Enhanced login flow** - Better redirect handling and session validation  
+✅ **Improved logout** - Comprehensive cookie clearing and Kratos logout flow  
+✅ **Better error handling** - User-friendly messages and debugging info  
+✅ **Updated UI** - Modern interface with real-time authentication status
 
 ---
 
