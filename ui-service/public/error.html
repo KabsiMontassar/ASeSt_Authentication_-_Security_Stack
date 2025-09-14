@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication Error - ASeSt</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="logo">
+                <h1>ASeSt</h1>
+                <p>Authentication & Security Stack</p>
+            </div>
+            <nav class="nav">
+                <a href="/" class="nav-link">Home</a>
+                <a href="/login" class="nav-link">Login</a>
+                <a href="/register" class="nav-link">Register</a>
+            </nav>
+        </header>
+
+        <main class="main">
+            <div class="error-card">
+                <div class="error-icon">⚠️</div>
+                <h2>Authentication Error</h2>
+                <div id="errorMessage">
+                    <p>An authentication error occurred. Please try again.</p>
+                </div>
+                <div class="error-actions">
+                    <a href="/login" class="btn btn-primary">Try Login Again</a>
+                    <a href="/register" class="btn btn-secondary">Create New Account</a>
+                    <a href="/" class="btn btn-outline">Back to Home</a>
+                </div>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <p>&copy; 2024 ASeSt Authentication Stack. Built with Kratos & Oathkeeper.</p>
+        </footer>
+    </div>
+
+    <script src="/app.js"></script>
+    <script>
+        // Parse error from URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const error = urlParams.get('error');
+        const errorDescription = urlParams.get('error_description');
+
+        const errorMessage = document.getElementById('errorMessage');
+
+        if (error) {
+            let message = '';
+
+            switch(error) {
+                case 'access_denied':
+                    message = 'Access was denied. Please check your credentials and try again.';
+                    break;
+                case 'invalid_request':
+                    message = 'Invalid request. Please try again.';
+                    break;
+                case 'unauthorized':
+                    message = 'You are not authorized to access this resource.';
+                    break;
+                case 'server_error':
+                    message = 'A server error occurred. Please try again later.';
+                    break;
+                default:
+                    message = errorDescription || 'An authentication error occurred.';
+            }
+
+            errorMessage.innerHTML = `<p>${message}</p>`;
+        }
+
+        // Auto-redirect after 10 seconds
+        setTimeout(() => {
+            window.location.href = '/login';
+        }, 10000);
+    </script>
+</body>
+</html>

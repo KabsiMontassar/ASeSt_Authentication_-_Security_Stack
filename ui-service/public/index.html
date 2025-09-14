@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASeSt - Authentication & Security Stack</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>ASeSt Authentication Stack</h1>
+            <nav id="nav">
+                <button id="loginBtn">Login</button>
+                <button id="registerBtn">Register</button>
+            </nav>
+        </header>
+
+        <main>
+            <section class="hero">
+                <h2>Welcome to ASeSt</h2>
+                <p>Authentication & Security Stack Demo</p>
+                <div class="features">
+                    <div class="feature">
+                        <h3>🔐 Identity Management</h3>
+                        <p>User registration, login, and session management</p>
+                    </div>
+                    <div class="feature">
+                        <h3>🛡️ API Gateway</h3>
+                        <p>JWT validation and request routing</p>
+                    </div>
+                    <div class="feature">
+                        <h3>📋 Authorization</h3>
+                        <p>Fine-grained permissions with Casbin</p>
+                    </div>
+                    <div class="feature">
+                        <h3>🗝️ Secrets Management</h3>
+                        <p>Dynamic secrets with HashiCorp Vault</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="status" id="statusSection">
+                <h3>System Status</h3>
+                <div id="statusContent">
+                    <p>Checking authentication status...</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="/app.js"></script>
+</body>
+</html>
