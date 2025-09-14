@@ -7,6 +7,9 @@ fi
 
 echo "Testing ASeSt stack..."
 
+# Override VAULT_ADDR for external access
+VAULT_ADDR="http://localhost:8210"
+
 # Test PostgreSQL connection
 echo "Testing PostgreSQL..."
 docker compose exec -T postgres psql -U ${POSTGRES_USER} -d ${POSTGRES_DB} -c "SELECT 1;" > /dev/null

@@ -7,6 +7,9 @@ fi
 
 echo "Waiting for services to be ready..."
 
+# Override VAULT_ADDR for external access
+VAULT_ADDR="http://localhost:8210"
+
 # Wait for PostgreSQL
 until docker compose exec -T postgres pg_isready -U ${POSTGRES_USER}; do
   echo "Waiting for PostgreSQL..."
