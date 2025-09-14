@@ -1,15 +1,5 @@
 # ASeSt: Authentication & Security Stack
 
-## A unified identity and access control system for microservices
-
----
-
-## Authentication & Security Stack
-
-**Enterprise-Grade Security Tools**:
-
-- **Ory Kratos** (identity manageme### Architecture Details
-
 ### Stack Components
 
 1. **UI Service**: React-style web interface for user registration, login, and dashboard
