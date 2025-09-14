@@ -88,7 +88,8 @@ app.post('/api/login', async (req, res) => {
       formData,
       {
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-CSRF-Token': csrf_token
         }
       }
     );
@@ -114,7 +115,8 @@ app.post('/api/registration', async (req, res) => {
       formData,
       {
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-CSRF-Token': csrf_token
         }
       }
     );
