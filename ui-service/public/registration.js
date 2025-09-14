@@ -35,7 +35,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const flowData = await flowResponse.json();
             const flowId = flowData.id;
-            const csrfToken = flowData.csrf_token;
+
+            // Extract CSRF token from the UI nodes
+            const csrfNode = flowData.ui.nodes.find(node => node.attributes.name === 'csrf_token');
+            const csrfToken = csrfNode ? csrfNode.attributes.value : null;
+
+            if (!csrfToken) {
+                throw new Error('CSRF token not found in flow response');
+            }
 
             // Submit registration
             showMessage('messages', 'Creating your account...', 'info');
