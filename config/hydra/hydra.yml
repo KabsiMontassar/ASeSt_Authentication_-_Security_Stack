@@ -1,0 +1,28 @@
+dsn: postgres://asest:asest123@postgres:5432/asest?sslmode=disable
+
+serve:
+  public:
+    base_url: http://localhost:4444/
+  admin:
+    base_url: http://localhost:4445/
+
+urls:
+  self:
+    issuer: http://localhost:4444/
+  consent: http://localhost:3000/consent
+  login: http://localhost:3000/login
+  error: http://localhost:3000/error
+
+oidc:
+  subject_identifiers:
+    supported_types:
+      - pairwise
+      - public
+    pairwise:
+      salt: "some-random-salt"
+
+log:
+  level: debug
+
+oauth2:
+  expose_internal_errors: true

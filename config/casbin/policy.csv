@@ -1,0 +1,8 @@
+p, admin, /api/admin, *
+p, user, /api/user, read
+p, user, /api/user, write
+p, finance, /api/finance, *
+
+g, alice, admin
+g, bob, user
+g, charlie, finance

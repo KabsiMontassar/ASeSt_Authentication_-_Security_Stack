@@ -1,0 +1,126 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - asest
+
+  kratos:
+    image: oryd/kratos:v0.11.1
+    depends_on:
+      - postgres
+    ports:
+      - "4433:4433"
+      - "4434:4434"
+    volumes:
+      - ./config/kratos:/etc/config/kratos
+    command: serve -c /etc/config/kratos/kratos.yml --dev
+    environment:
+      - DSN=${KRATOS_DSN}
+    networks:
+      - asest
+
+  kratos-migrate:
+    image: oryd/kratos:v0.11.1
+    depends_on:
+      - postgres
+    volumes:
+      - ./config/kratos:/etc/config/kratos
+    command: migrate sql -c /etc/config/kratos/kratos.yml --yes
+    environment:
+      - DSN=${KRATOS_DSN}
+    networks:
+      - asest
+
+  hydra:
+    image: oryd/hydra:v1.11.8
+    depends_on:
+      - postgres
+    ports:
+      - "4444:4444"
+      - "4445:4445"
+    volumes:
+      - ./config/hydra:/etc/config/hydra
+    command: serve all -c /etc/config/hydra/hydra.yml
+    environment:
+      - DSN=${HYDRA_DSN}
+      - OAUTH2_CONSENT_URL=${OAUTH2_CONSENT_URL}
+      - OAUTH2_LOGIN_URL=${OAUTH2_LOGIN_URL}
+    networks:
+      - asest
+
+  hydra-migrate:
+    image: oryd/hydra:v1.11.8
+    depends_on:
+      - postgres
+    volumes:
+      - ./config/hydra:/etc/config/hydra
+    command: migrate sql -c /etc/config/hydra/hydra.yml --yes
+    environment:
+      - DSN=${HYDRA_DSN}
+    networks:
+      - asest
+
+  oathkeeper:
+    image: oryd/oathkeeper:v0.38.25-beta.1
+    ports:
+      - "4455:4455"
+      - "4456:4456"
+    volumes:
+      - ./config/oathkeeper:/etc/config/oathkeeper
+    command: serve proxy -c /etc/config/oathkeeper/oathkeeper.yml
+    networks:
+      - asest
+
+  vault:
+    image: vault:1.12.0
+    ports:
+      - "8200:8200"
+    volumes:
+      - ./config/vault:/vault/config
+      - vault_data:/vault/file
+    environment:
+      - VAULT_DEV_ROOT_TOKEN_ID=${VAULT_DEV_ROOT_TOKEN_ID}
+      - VAULT_DEV_LISTEN_ADDRESS=${VAULT_DEV_LISTEN_ADDRESS}
+    cap_add:
+      - IPC_LOCK
+    command: server -dev -config=/vault/config/vault.hcl
+    networks:
+      - asest
+
+  sample-service:
+    build: ./sample-service
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./config:/app/config
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - VAULT_ADDR=${VAULT_ADDR}
+      - VAULT_TOKEN=${VAULT_TOKEN}
+      - Kratos_URL=${KRATOS_URL}
+      - Hydra_URL=${HYDRA_URL}
+    depends_on:
+      - postgres
+      - vault
+      - kratos
+      - hydra
+    networks:
+      - asest
+
+volumes:
+  postgres_data:
+  vault_data:
+
+networks:
+  asest:
+    driver: bridge
