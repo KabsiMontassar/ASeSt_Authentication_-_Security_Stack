@@ -48,7 +48,7 @@ services:
       - "4445:4445"
     volumes:
       - ./config/hydra:/etc/config/hydra
-    command: serve all -c /etc/config/hydra/hydra.yml
+    command: serve all -c /etc/config/hydra/hydra.yml --dangerous-force-http
     environment:
       - DSN=${HYDRA_DSN}
       - OAUTH2_CONSENT_URL=${OAUTH2_CONSENT_URL}
