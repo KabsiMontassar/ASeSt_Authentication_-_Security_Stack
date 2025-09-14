@@ -206,16 +206,20 @@ All configurations are in the `config/` directory:
 
 ### Environment Variables
 
-The following environment variables can be configured in the `.env` file:
+The following environment variables are configured in the `.env` file. The provided defaults work out-of-the-box for development:
 
-| Variable                  | Description                    | Default                                                  |
-| ------------------------- | ------------------------------ | -------------------------------------------------------- |
-| `POSTGRES_DB`             | PostgreSQL database name       | `asest`                                                  |
-| `POSTGRES_USER`           | PostgreSQL username            | `asest`                                                  |
-| `POSTGRES_PASSWORD`       | PostgreSQL password            | `asest123`                                               |
-| `VAULT_DEV_ROOT_TOKEN_ID` | Vault root token ID            | `root`                                                   |
-| `VAULT_TOKEN`             | Vault authentication token     | `root`                                                   |
-| `SMTP_CONNECTION_URI`     | SMTP server for email features | `smtps://test:test@localhost:1025/?skip_ssl_verify=true` |
+| Variable                  | Description                     | Default                                                      |
+| ------------------------- | ------------------------------- | ------------------------------------------------------------ |
+| `POSTGRES_DB`             | PostgreSQL database name        | `asest`                                                      |
+| `POSTGRES_USER`           | PostgreSQL username             | `asest`                                                      |
+| `POSTGRES_PASSWORD`       | PostgreSQL password             | `asest123`                                                   |
+| `KRATOS_DSN`              | Kratos database connection     | `postgres://asest:asest123@postgres:5432/asest?sslmode=disable` |
+| `HYDRA_DSN`               | Hydra database connection      | `postgres://asest:asest123@postgres:5432/asest?sslmode=disable` |
+| `VAULT_DEV_ROOT_TOKEN_ID` | Vault root token ID             | `root`                                                       |
+| `VAULT_ADDR`              | Vault server address           | `http://vault:8210`                                         |
+| `VAULT_TOKEN`             | Vault authentication token     | `root`                                                       |
+
+**Note**: Other configuration values (URLs, SMTP settings, etc.) are hardcoded in the respective service configuration files for simplicity.
 
 ### Development
 
