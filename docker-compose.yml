@@ -33,7 +33,7 @@ services:
       - postgres
     volumes:
       - ./config/kratos:/etc/config/kratos
-    command: migrate sql -c /etc/config/kratos/kratos.yml --yes
+    command: migrate sql -e --yes
     environment:
       - DSN=${KRATOS_DSN}
     restart: "no"
@@ -63,7 +63,7 @@ services:
       - postgres
     volumes:
       - ./config/hydra:/etc/config/hydra
-    command: migrate sql -c /etc/config/hydra/hydra.yml --yes
+    command: migrate sql -e --yes
     environment:
       - DSN=${HYDRA_DSN}
     restart: "no"
