@@ -1,4 +1,4 @@
-# ASeSt : Authentication & Security Stack
+# ASeSt: Authentication & Security Stack
 
 ## A unified identity and access control system for microservices
 
@@ -6,7 +6,7 @@
 
 ## Authentication & Security Stack
 
-**Tools**:
+**Enterprise-Grade Security Tools**:
 
 - **Ory Kratos** (identity management, login, registration, recovery)
 - **Ory Hydra** (OAuth2 & OpenID Connect provider, SSO)
@@ -62,7 +62,7 @@ Built a **zero-trust security layer** combining:
 
 ---
 
-### Flowchart
+### Architecture Flowchart
 
 ```mermaid
 flowchart LR
@@ -97,50 +97,71 @@ Demonstrates **full-cycle security expertise** – from user identity (Ory Krato
 
 - Docker and Docker Compose
 - Git
+- curl (for testing)
 
 ### Environment Configuration
 
-All sensitive configuration is stored in the `.env` file. Copy the provided `.env` file and modify the values as needed for your environment:
+All sensitive configuration is stored in the `.env` file. The provided configuration works out-of-the-box for development:
 
 ```bash
-cp .env .env.local  # For local development
+# Optional: Create local copy
+cp .env .env.local
 ```
 
 **Important**: Never commit the `.env` file to version control. It's already included in `.gitignore`.
 
 ### Quick Start
 
-1. Clone the repository:
+1. **Clone the repository**:
 
    ```bash
    git clone https://github.com/KabsiMontassar/ASeSt_Authentication_-_Security_Stack.git
    cd ASeSt_Authentication_-_Security_Stack
    ```
 
-2. Configure environment (optional):
+2. **Configure environment** (optional):
 
    ```bash
    # Edit .env file with your preferred values
    nano .env
    ```
 
-3. Start the services:
+3. **Start the services**:
 
    ```bash
-   docker-compose up -d
+   # Run database migrations first
+   docker compose up -d postgres
+   docker compose up kratos-migrate hydra-migrate
+   
+   # Start all services
+   docker compose up -d
    ```
 
-4. Initialize the system:
+4. **Initialize the system**:
 
    ```bash
+   chmod +x init.sh test.sh
    ./init.sh
    ```
 
-5. Access the services:
-   - Ory Kratos: [http://localhost:4433](http://localhost:4433)
-   - Ory Hydra: [http://localhost:4444](http://localhost:4444)
-   - Vault: [http://localhost:8201](http://localhost:8201)
-   - Sample Microservice: [http://localhost:8080](http://localhost:8080)
+5. **Verify everything is working**:
+
+   ```bash
+   ./test.sh
+   ```
+
+### Service URLs
+
+Once running, access the services at:
+
+- **Kratos Admin API**: [http://localhost:4433](http://localhost:4433)
+- **Kratos Public API**: [http://localhost:4434](http://localhost:4434)
+- **Hydra Admin API**: [http://localhost:4444](http://localhost:4444)
+- **Hydra Public API**: [http://localhost:4445](http://localhost:4445)
+- **Oathkeeper Proxy**: [http://localhost:4455](http://localhost:4455)
+- **Oathkeeper API**: [http://localhost:4456](http://localhost:4456)
+- **Vault UI**: [http://localhost:8210/ui](http://localhost:8210/ui) (Token: `root`)
+- **Sample Service**: [http://localhost:8080](http://localhost:8080)
 
 ### Configuration
 
@@ -170,7 +191,7 @@ The following environment variables can be configured in the `.env` file:
 To modify configurations or add services, edit the respective files and restart with:
 
 ```bash
-docker-compose down && docker-compose up -d
+docker compose down && docker compose up -d
 ```
 
 ### Testing
@@ -179,6 +200,17 @@ Run the test script to validate all services:
 
 ```bash
 ./test.sh
+```
+
+Expected output:
+
+```text
+✅ PostgreSQL is running
+✅ Vault is running and has secrets  
+✅ Kratos is running
+✅ Hydra is running
+✅ Oathkeeper is running
+✅ Sample Service is running
 ```
 
 ### Contributing
