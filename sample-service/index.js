@@ -2,7 +2,6 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const jwksClient = require('jwks-rsa');
 const { newEnforcer } = require('casbin');
-const { FileAdapter } = require('@casbin/file-adapter');
 const { Client } = require('pg');
 const vault = require('node-vault')();
 
@@ -27,8 +26,14 @@ function getKey(header, callback) {
 let enforcer;
 
 async function initCasbin() {
-  const adapter = new FileAdapter('/app/config/casbin/policy.csv');
+  // Use PostgreSQL adapter for better production compatibility
+  const pgAdapter = require('casbin-pg-adapter');
+  const adapter = await pgAdapter.newAdapter(process.env.DATABASE_URL);
+  
   enforcer = await newEnforcer('/app/config/casbin/model.conf', adapter);
+  
+  // Load policies from the adapter
+  await enforcer.loadPolicy();
 }
 
 initCasbin();
