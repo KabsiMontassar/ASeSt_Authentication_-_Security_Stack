@@ -2,7 +2,7 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const jwksClient = require('jwks-rsa');
 const { newEnforcer } = require('casbin');
-const { FileAdapter } = require('casbin/file-adapter');
+const { FileAdapter } = require('@casbin/file-adapter');
 const { Client } = require('pg');
 const vault = require('node-vault')();
 
