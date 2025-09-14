@@ -30,6 +30,12 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        // Additional password validation
+        if (password.toLowerCase().includes(email.split('@')[0].toLowerCase())) {
+            showMessage('messages', 'Password cannot be too similar to your email address', 'error');
+            return;
+        }
+
         try {
             // Get registration flow
             showMessage('messages', 'Initializing registration...', 'info');
@@ -71,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     withCredentials: true,
                     maxRedirects: 0,
                     validateStatus: function (status) {
-                        return status >= 200 && status < 400; // Accept redirects
+                        return status >= 200 && status < 500; // Accept all responses to handle validation errors
                     }
                 }
             );
@@ -92,6 +98,33 @@ document.addEventListener('DOMContentLoaded', () => {
                 setTimeout(() => {
                     redirectTo('/login');
                 }, 3000);
+                return;
+            }
+
+            // Handle validation errors (400 status)
+            if (registrationResponse.status === 400) {
+                const errorData = registrationResponse.data;
+                
+                // Extract validation errors from UI nodes
+                let errorMessages = [];
+                if (errorData.ui && errorData.ui.nodes) {
+                    errorData.ui.nodes.forEach(node => {
+                        if (node.messages && node.messages.length > 0) {
+                            node.messages.forEach(msg => {
+                                if (msg.type === 'error') {
+                                    errorMessages.push(msg.text);
+                                }
+                            });
+                        }
+                    });
+                }
+
+                if (errorMessages.length > 0) {
+                    showMessage('messages', errorMessages.join('. '), 'error');
+                } else {
+                    showMessage('messages', 'Registration failed. Please check your input and try again.', 'error');
+                }
+                return;
             }
 
         } catch (error) {
@@ -100,15 +133,35 @@ document.addEventListener('DOMContentLoaded', () => {
             // Handle axios error response
             if (error.response) {
                 const errorData = error.response.data;
-                if (errorData.ui && errorData.ui.messages) {
-                    const errorMessages = errorData.ui.messages.map(msg => msg.text).join(', ');
-                    showMessage('messages', errorMessages, 'error');
-                } else {
-                    const errorMessage = errorData.error?.message || errorData.message || 'Registration failed';
-                    showMessage('messages', errorMessage, 'error');
+                console.log('Error response data:', errorData);
+                
+                // Extract validation errors from UI nodes
+                let errorMessages = [];
+                if (errorData.ui && errorData.ui.nodes) {
+                    errorData.ui.nodes.forEach(node => {
+                        if (node.messages && node.messages.length > 0) {
+                            node.messages.forEach(msg => {
+                                if (msg.type === 'error') {
+                                    errorMessages.push(msg.text);
+                                }
+                            });
+                        }
+                    });
                 }
+
+                if (errorMessages.length > 0) {
+                    showMessage('messages', errorMessages.join('. '), 'error');
+                } else if (errorData.error?.message) {
+                    showMessage('messages', errorData.error.message, 'error');
+                } else if (errorData.message) {
+                    showMessage('messages', errorData.message, 'error');
+                } else {
+                    showMessage('messages', 'Registration failed. Please try again.', 'error');
+                }
+            } else if (error.request) {
+                showMessage('messages', 'Network error. Please check your connection and try again.', 'error');
             } else {
-                showMessage('messages', 'An error occurred during registration. Please try again.', 'error');
+                showMessage('messages', 'An unexpected error occurred. Please try again.', 'error');
             }
         }
     });
