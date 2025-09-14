@@ -1,5 +1,10 @@
 // Login Page Script
 
+// Configure Axios defaults for cookie handling
+axios.defaults.withCredentials = true;
+axios.defaults.xsrfCookieName = 'csrf_token';
+axios.defaults.xsrfHeaderName = 'X-CSRF-Token';
+
 document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('loginForm');
 
@@ -15,21 +20,21 @@ document.addEventListener('DOMContentLoaded', () => {
             // Get login flow
             showMessage('messages', 'Initializing login...', 'info');
 
-            const flowResponse = await fetch('http://localhost:4433/self-service/login/browser');
-            if (!flowResponse.ok) {
-                throw new Error('Failed to initialize login flow');
-            }
+            const flowResponse = await axios.get('http://localhost:4433/self-service/login/browser', {
+                withCredentials: true
+            });
 
-            const flowData = await flowResponse.json();
+            const flowData = flowResponse.data;
             const flowId = flowData.id;
 
             // Extract CSRF token from the UI nodes
-            const csrfNode = flowData.ui.nodes.find(node => node.attributes.name === 'csrf_token');
-            const csrfToken = csrfNode ? csrfNode.attributes.value : null;
+            const csrfToken = extractCSRFToken(flowData);
 
             if (!csrfToken) {
                 throw new Error('CSRF token not found in flow response');
             }
+
+            console.log('CSRF Token:', csrfToken);
 
             // Submit login
             showMessage('messages', 'Signing you in...', 'info');
@@ -40,39 +45,56 @@ document.addEventListener('DOMContentLoaded', () => {
             formData.append('password', password);
             formData.append('csrf_token', csrfToken);
 
-            const loginResponse = await fetch('http://localhost:4433/self-service/login?flow=' + flowId, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: formData,
-                redirect: 'manual'
-            });
+            const loginResponse = await axios.post(
+                `http://localhost:4433/self-service/login?flow=${flowId}`,
+                formData,
+                {
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRF-Token': csrfToken
+                    },
+                    withCredentials: true,
+                    maxRedirects: 0,
+                    validateStatus: function (status) {
+                        return status >= 200 && status < 400; // Accept redirects
+                    }
+                }
+            );
 
-            if (loginResponse.status === 302) {
-                const location = loginResponse.headers.get('location');
-                window.location = location;
-                return;
+            // Handle successful login or redirect
+            if (loginResponse.status === 303 || loginResponse.status === 302) {
+                const location = loginResponse.headers.location;
+                if (location) {
+                    window.location.href = location;
+                    return;
+                }
             }
 
-            const loginData = await loginResponse.json();
-
-            if (loginResponse.ok) {
+            if (loginResponse.status === 200 || loginResponse.status === 201) {
                 showMessage('messages', 'Login successful! Redirecting...', 'success');
 
                 // Redirect to dashboard after a short delay
                 setTimeout(() => {
                     redirectTo('/dashboard');
                 }, 1000);
-            } else {
-                // Handle login errors
-                const errorMessage = loginData.error?.message || loginData.message || 'Login failed';
-                showMessage('messages', errorMessage, 'error');
             }
 
         } catch (error) {
             console.error('Login error:', error);
-            showMessage('messages', 'An error occurred during login. Please try again.', 'error');
+
+            // Handle axios error response
+            if (error.response) {
+                const errorData = error.response.data;
+                if (errorData.ui && errorData.ui.messages) {
+                    const errorMessages = errorData.ui.messages.map(msg => msg.text).join(', ');
+                    showMessage('messages', errorMessages, 'error');
+                } else {
+                    const errorMessage = errorData.error?.message || errorData.message || 'Login failed';
+                    showMessage('messages', errorMessage, 'error');
+                }
+            } else {
+                showMessage('messages', 'An error occurred during login. Please try again.', 'error');
+            }
         }
     });
 });

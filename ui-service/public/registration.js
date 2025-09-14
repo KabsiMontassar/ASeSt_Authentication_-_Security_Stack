@@ -1,11 +1,16 @@
 // Registration Page Script
 
+// Configure Axios defaults for cookie handling
+axios.defaults.withCredentials = true;
+axios.defaults.xsrfCookieName = 'csrf_token';
+axios.defaults.xsrfHeaderName = 'X-CSRF-Token';
+
 document.addEventListener('DOMContentLoaded', () => {
     const registrationForm = document.getElementById('registrationForm');
 
     registrationForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        console.log('Registration form submitted - using direct Kratos submission');
+        console.log('Registration form submitted - using Axios with proper cookie handling');
 
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
@@ -29,21 +34,21 @@ document.addEventListener('DOMContentLoaded', () => {
             // Get registration flow
             showMessage('messages', 'Initializing registration...', 'info');
 
-            const flowResponse = await fetch('http://localhost:4433/self-service/registration/browser');
-            if (!flowResponse.ok) {
-                throw new Error('Failed to initialize registration flow');
-            }
+            const flowResponse = await axios.get('http://localhost:4433/self-service/registration/browser', {
+                withCredentials: true
+            });
 
-            const flowData = await flowResponse.json();
+            const flowData = flowResponse.data;
             const flowId = flowData.id;
 
             // Extract CSRF token from the UI nodes
-            const csrfNode = flowData.ui.nodes.find(node => node.attributes.name === 'csrf_token');
-            const csrfToken = csrfNode ? csrfNode.attributes.value : null;
+            const csrfToken = extractCSRFToken(flowData);
 
             if (!csrfToken) {
                 throw new Error('CSRF token not found in flow response');
             }
+
+            console.log('CSRF Token:', csrfToken);
 
             // Submit registration
             showMessage('messages', 'Creating your account...', 'info');
@@ -55,39 +60,56 @@ document.addEventListener('DOMContentLoaded', () => {
             formData.append('password', password);
             formData.append('csrf_token', csrfToken);
 
-            const registrationResponse = await fetch('http://localhost:4433/self-service/registration?flow=' + flowId, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: formData,
-                redirect: 'manual'
-            });
+            const registrationResponse = await axios.post(
+                `http://localhost:4433/self-service/registration?flow=${flowId}`,
+                formData,
+                {
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRF-Token': csrfToken
+                    },
+                    withCredentials: true,
+                    maxRedirects: 0,
+                    validateStatus: function (status) {
+                        return status >= 200 && status < 400; // Accept redirects
+                    }
+                }
+            );
 
-            if (registrationResponse.status === 302) {
-                const location = registrationResponse.headers.get('location');
-                window.location = location;
-                return;
+            // Handle successful registration or redirect
+            if (registrationResponse.status === 303 || registrationResponse.status === 302) {
+                const location = registrationResponse.headers.location;
+                if (location) {
+                    window.location.href = location;
+                    return;
+                }
             }
 
-            const registrationData = await registrationResponse.json();
-
-            if (registrationResponse.ok) {
+            if (registrationResponse.status === 200 || registrationResponse.status === 201) {
                 showMessage('messages', 'Account created successfully! Please check your email for verification.', 'success');
 
                 // Redirect to login after a delay
                 setTimeout(() => {
                     redirectTo('/login');
                 }, 3000);
-            } else {
-                // Handle registration errors
-                const errorMessage = registrationData.error?.message || registrationData.message || 'Registration failed';
-                showMessage('messages', errorMessage, 'error');
             }
 
         } catch (error) {
             console.error('Registration error:', error);
-            showMessage('messages', 'An error occurred during registration. Please try again.', 'error');
+
+            // Handle axios error response
+            if (error.response) {
+                const errorData = error.response.data;
+                if (errorData.ui && errorData.ui.messages) {
+                    const errorMessages = errorData.ui.messages.map(msg => msg.text).join(', ');
+                    showMessage('messages', errorMessages, 'error');
+                } else {
+                    const errorMessage = errorData.error?.message || errorData.message || 'Registration failed';
+                    showMessage('messages', errorMessage, 'error');
+                }
+            } else {
+                showMessage('messages', 'An error occurred during registration. Please try again.', 'error');
+            }
         }
     });
 });

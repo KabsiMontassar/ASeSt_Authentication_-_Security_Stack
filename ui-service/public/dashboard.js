@@ -27,10 +27,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         logoutBtn.addEventListener('click', async () => {
             try {
                 await fetch('/api/logout', { method: 'POST' });
-                deleteCookie('ory_kratos_session');
+                clearAuthCookies();
                 redirectTo('/');
             } catch (error) {
                 console.error('Logout error:', error);
+                // Clear cookies anyway in case of error
+                clearAuthCookies();
+                redirectTo('/');
             }
         });
     }

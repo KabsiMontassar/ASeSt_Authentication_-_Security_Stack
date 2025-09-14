@@ -26,14 +26,43 @@ function getCookie(name) {
     return null;
 }
 
-function setCookie(name, value, days = 30) {
+function setCookie(name, value, days = 30, path = '/', secure = false, sameSite = 'lax') {
     const expires = new Date();
     expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000));
-    document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/`;
+    
+    let cookieString = `${name}=${value};expires=${expires.toUTCString()};path=${path};SameSite=${sameSite}`;
+    
+    if (secure) {
+        cookieString += ';Secure';
+    }
+    
+    document.cookie = cookieString;
 }
 
-function deleteCookie(name) {
-    document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
+function deleteCookie(name, path = '/') {
+    document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=${path}`;
+}
+
+// Helper function to clear all authentication-related cookies
+function clearAuthCookies() {
+    const authCookies = ['ory_kratos_session', 'csrf_token', 'ory_kratos_continuity'];
+    authCookies.forEach(cookie => {
+        deleteCookie(cookie, '/');
+        deleteCookie(cookie, '');
+    });
+}
+
+// Helper function to extract CSRF token from Kratos flow response
+function extractCSRFToken(flowData) {
+    if (!flowData || !flowData.ui || !flowData.ui.nodes) {
+        return null;
+    }
+    
+    const csrfNode = flowData.ui.nodes.find(node => 
+        node.attributes && node.attributes.name === 'csrf_token'
+    );
+    
+    return csrfNode ? csrfNode.attributes.value : null;
 }
 
 // Check authentication status
@@ -68,10 +97,13 @@ async function updateNavigation() {
         document.getElementById('logoutBtn').addEventListener('click', async () => {
             try {
                 await fetch('/api/logout', { method: 'POST' });
-                deleteCookie('ory_kratos_session');
+                clearAuthCookies();
                 redirectTo('/');
             } catch (error) {
                 console.error('Logout error:', error);
+                // Clear cookies anyway in case of error
+                clearAuthCookies();
+                redirectTo('/');
             }
         });
     } else {
