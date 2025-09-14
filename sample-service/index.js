@@ -27,8 +27,8 @@ let enforcer;
 
 async function initCasbin() {
   // Use PostgreSQL adapter for better production compatibility
-  const pgAdapter = require('casbin-pg-adapter');
-  const adapter = await pgAdapter.newAdapter(process.env.DATABASE_URL);
+  const { PostgreSQLAdapter } = require('casbin-pg-adapter');
+  const adapter = await PostgreSQLAdapter.newAdapter(process.env.DATABASE_URL);
   
   enforcer = await newEnforcer('/app/config/casbin/model.conf', adapter);
   
