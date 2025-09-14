@@ -21,6 +21,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Load protected API data
     loadProtectedData();
 
+    // Load permissions
+    loadPermissions();
+
     // Setup logout handler
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
@@ -64,16 +67,23 @@ async function loadProtectedData() {
     try {
         apiElement.innerHTML = '<p>Loading protected data...</p>';
 
-        const response = await fetch('/api/protected');
-        const data = await response.json();
+        const response = await axios.get('/api/protected', {
+            withCredentials: true
+        });
 
-        if (response.ok) {
+        const data = response.data;
+
+        if (response.status === 200) {
             apiElement.innerHTML = `
-                <p><strong>Status:</strong> Access granted</p>
+                <p><strong>Status:</strong> Access granted ✅</p>
                 <p><strong>User ID:</strong> ${data.user?.identity?.id || 'N/A'}</p>
-                <p><strong>Permissions:</strong> ${JSON.stringify(data.user?.identity?.metadata_public || {}, null, 2)}</p>
-                <p><strong>API Response:</strong></p>
-                <pre>${JSON.stringify(data.data || {}, null, 2)}</pre>
+                <p><strong>Email:</strong> ${data.user?.identity?.traits?.email || 'N/A'}</p>
+                <p><strong>Session Active:</strong> ${data.data?.session_active ? 'Yes' : 'No'}</p>
+                <p><strong>Service Status:</strong> ${data.data?.note || 'Connected'}</p>
+                <div style="margin-top: 10px;">
+                    <strong>API Response:</strong>
+                    <pre style="background-color: #f5f5f5; padding: 10px; border-radius: 4px; font-size: 12px;">${JSON.stringify(data.data || {}, null, 2)}</pre>
+                </div>
             `;
         } else {
             apiElement.innerHTML = `
@@ -82,9 +92,18 @@ async function loadProtectedData() {
         }
     } catch (error) {
         console.error('API error:', error);
+        
+        let errorMessage = 'Failed to load protected data';
+        let errorDetails = error.message;
+        
+        if (error.response) {
+            errorMessage = error.response.data?.error || 'API returned an error';
+            errorDetails = `Status: ${error.response.status}`;
+        }
+        
         apiElement.innerHTML = `
-            <p style="color: red;"><strong>Error:</strong> Failed to load protected data</p>
-            <p>${error.message}</p>
+            <p style="color: red;"><strong>Error:</strong> ${errorMessage}</p>
+            <p style="color: #666; font-size: 12px;">${errorDetails}</p>
         `;
     }
 }
