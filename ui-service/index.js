@@ -74,10 +74,10 @@ app.get('/api/registration-flow', async (req, res) => {
 
 app.post('/api/login', async (req, res) => {
   try {
-    const { flow, email, password } = req.body;
+    const { flow, email, password, csrf_token } = req.body;
     const response = await axios.post(
       `${KRATOS_PUBLIC_URL}/self-service/login?flow=${flow}`,
-      { method: 'password', password, password_identifier: email },
+      { method: 'password', password, password_identifier: email, csrf_token },
       { headers: { 'Content-Type': 'application/json' } }
     );
     res.json(response.data);
@@ -88,10 +88,15 @@ app.post('/api/login', async (req, res) => {
 
 app.post('/api/registration', async (req, res) => {
   try {
-    const { flow, email, password } = req.body;
+    const { flow, email, password, csrf_token } = req.body;
     const response = await axios.post(
       `${KRATOS_PUBLIC_URL}/self-service/registration?flow=${flow}`,
-      { method: 'password', password, traits: { email } },
+      {
+        method: 'password',
+        password,
+        traits: { email },
+        csrf_token
+      },
       { headers: { 'Content-Type': 'application/json' } }
     );
     res.json(response.data);

@@ -22,6 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const flowData = await flowResponse.json();
             const flowId = flowData.id;
+            const csrfToken = flowData.csrf_token;
 
             // Submit login
             showMessage('messages', 'Signing you in...', 'info');
@@ -34,7 +35,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify({
                     flow: flowId,
                     email: email,
-                    password: password
+                    password: password,
+                    csrf_token: csrfToken
                 })
             });
 

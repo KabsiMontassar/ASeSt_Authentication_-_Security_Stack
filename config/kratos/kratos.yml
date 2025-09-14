@@ -56,15 +56,30 @@ selfservice:
           hooks:
             - hook: session
 
-# Disable CSRF protection for API requests
-csrf:
-  enabled: false
+# Disable CSRF protection for development
+serve:
+  public:
+    base_url: http://localhost:4433/
+    cors:
+      enabled: true
+      allowed_origins:
+        - http://localhost:3000
+        - http://localhost:4455
+      allowed_methods:
+        - POST
+        - GET
+        - PUT
+        - DELETE
+      allowed_headers:
+        - Authorization
+        - Content-Type
+        - X-Session-Token
+        - X-CSRF-Token
 
 session:
   cookie:
     name: ory_kratos_session
     same_site: Lax
-    secure: false  # Set to true in production with HTTPS
   lifespan: 720h
 
 hashers:
