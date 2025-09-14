@@ -52,6 +52,7 @@ services:
     command: serve all -c /etc/config/hydra/hydra.yml --dangerous-force-http
     environment:
       - DSN=${HYDRA_DSN}
+      - SECRETS_SYSTEM=${HYDRA_SECRETS_SYSTEM}
       - OAUTH2_CONSENT_URL=${OAUTH2_CONSENT_URL}
       - OAUTH2_LOGIN_URL=${OAUTH2_LOGIN_URL}
     networks:
