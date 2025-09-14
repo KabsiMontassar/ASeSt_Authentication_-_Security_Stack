@@ -2,9 +2,9 @@ dsn: postgres://asest:asest123@postgres:5432/asest?sslmode=disable
 
 serve:
   public:
-    base_url: http://localhost:4444/
+    port: 4444
   admin:
-    base_url: http://localhost:4445/
+    port: 4445
 
 urls:
   self:

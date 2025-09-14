@@ -10,7 +10,6 @@ log:
   level: debug
 
 identity:
-  default_schema_url: file:///etc/config/kratos/identity.schema.json
   schemas:
     - id: default
       url: file:///etc/config/kratos/identity.schema.json
@@ -44,13 +43,13 @@ selfservice:
 
 session:
   cookie:
-    secure: false
+    name: ory_kratos_session
   lifespan: 720h
 
 hashers:
   argon2:
     parallelism: 1
-    memory: 131072
+    memory: "131072"
     iterations: 2
     salt_length: 16
     key_length: 16

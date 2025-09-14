@@ -139,7 +139,7 @@ cp .env .env.local  # For local development
 5. Access the services:
    - Ory Kratos: [http://localhost:4433](http://localhost:4433)
    - Ory Hydra: [http://localhost:4444](http://localhost:4444)
-   - Vault: [http://localhost:8200](http://localhost:8200)
+   - Vault: [http://localhost:8201](http://localhost:8201)
    - Sample Microservice: [http://localhost:8080](http://localhost:8080)
 
 ### Configuration
