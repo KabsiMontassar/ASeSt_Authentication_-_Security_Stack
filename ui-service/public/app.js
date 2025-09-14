@@ -96,7 +96,15 @@ async function updateNavigation() {
         // Add logout handler
         document.getElementById('logoutBtn').addEventListener('click', async () => {
             try {
-                await fetch('/api/logout', { method: 'POST' });
+                // Use axios with proper credentials
+                const logoutResponse = await axios.post('/api/logout', {}, {
+                    withCredentials: true,
+                    validateStatus: function (status) {
+                        return status >= 200 && status < 500; // Accept all responses
+                    }
+                });
+                
+                console.log('Logout response:', logoutResponse.status);
                 clearAuthCookies();
                 redirectTo('/');
             } catch (error) {

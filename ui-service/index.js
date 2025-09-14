@@ -132,6 +132,8 @@ app.post('/api/registration', async (req, res) => {
 app.get('/api/session', async (req, res) => {
   try {
     const sessionCookie = req.cookies.ory_kratos_session;
+    console.log('Session check - cookie present:', !!sessionCookie);
+    
     if (!sessionCookie) {
       return res.status(401).json({ error: 'No session cookie' });
     }
@@ -139,8 +141,11 @@ app.get('/api/session', async (req, res) => {
     const response = await axios.get(`${KRATOS_PUBLIC_URL}/sessions/whoami`, {
       headers: { Cookie: `ory_kratos_session=${sessionCookie}` }
     });
+    
+    console.log('Session validation successful for user:', response.data.identity?.traits?.email);
     res.json(response.data);
   } catch (error) {
+    console.log('Session validation failed:', error.response?.status, error.message);
     res.status(error.response?.status || 500).json(error.response?.data || { error: error.message });
   }
 });
@@ -148,15 +153,49 @@ app.get('/api/session', async (req, res) => {
 app.post('/api/logout', async (req, res) => {
   try {
     const sessionCookie = req.cookies.ory_kratos_session;
+    console.log('Logout attempt, session cookie present:', !!sessionCookie);
+    
     if (sessionCookie) {
-      await axios.delete(`${KRATOS_PUBLIC_URL}/self-service/logout/browser`, {
-        headers: { Cookie: `ory_kratos_session=${sessionCookie}` }
-      });
+      try {
+        // First, try to get the logout flow
+        const logoutFlowResponse = await axios.get(`${KRATOS_PUBLIC_URL}/self-service/logout/browser`, {
+          headers: { Cookie: `ory_kratos_session=${sessionCookie}` }
+        });
+        
+        console.log('Logout flow created:', logoutFlowResponse.status);
+        
+        // Submit the logout
+        if (logoutFlowResponse.data && logoutFlowResponse.data.logout_url) {
+          await axios.get(logoutFlowResponse.data.logout_url, {
+            headers: { Cookie: `ory_kratos_session=${sessionCookie}` }
+          });
+        }
+      } catch (kratosError) {
+        console.log('Kratos logout error (continuing anyway):', kratosError.message);
+        // Continue with cookie clearing even if Kratos logout fails
+      }
     }
-    res.clearCookie('ory_kratos_session');
-    res.json({ success: true });
+    
+    // Clear all authentication cookies
+    res.clearCookie('ory_kratos_session', { path: '/' });
+    res.clearCookie('csrf_token', { path: '/' });
+    
+    // Set additional cookie clearing headers
+    res.set({
+      'Clear-Site-Data': '"cookies"',
+      'Cache-Control': 'no-cache, no-store, must-revalidate'
+    });
+    
+    console.log('Logout completed successfully');
+    res.json({ success: true, message: 'Logged out successfully' });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Logout error:', error.message);
+    
+    // Even if there's an error, clear cookies and return success
+    res.clearCookie('ory_kratos_session', { path: '/' });
+    res.clearCookie('csrf_token', { path: '/' });
+    
+    res.json({ success: true, message: 'Logged out (with errors, but cookies cleared)' });
   }
 });
 

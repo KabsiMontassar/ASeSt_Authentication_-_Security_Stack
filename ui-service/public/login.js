@@ -64,19 +64,45 @@ document.addEventListener('DOMContentLoaded', () => {
             // Handle successful login or redirect
             if (loginResponse.status === 303 || loginResponse.status === 302) {
                 const location = loginResponse.headers.location;
-                if (location) {
+                console.log('Login redirect to:', location);
+                
+                // If the redirect is to the UI service, follow it
+                if (location && location.includes('localhost:3000')) {
                     window.location.href = location;
-                    return;
+                } else {
+                    // Otherwise redirect to dashboard
+                    showMessage('messages', 'Login successful! Redirecting...', 'success');
+                    setTimeout(() => {
+                        redirectTo('/dashboard');
+                    }, 1000);
                 }
+                return;
             }
 
             if (loginResponse.status === 200 || loginResponse.status === 201) {
                 showMessage('messages', 'Login successful! Redirecting...', 'success');
 
-                // Redirect to dashboard after a short delay
-                setTimeout(() => {
-                    redirectTo('/dashboard');
-                }, 1000);
+                // Check if we have a session by calling the session endpoint
+                try {
+                    const sessionCheck = await axios.get('/api/session', {
+                        withCredentials: true
+                    });
+                    
+                    if (sessionCheck.status === 200) {
+                        // Session is valid, redirect to dashboard
+                        setTimeout(() => {
+                            redirectTo('/dashboard');
+                        }, 1000);
+                    } else {
+                        throw new Error('Session validation failed');
+                    }
+                } catch (sessionError) {
+                    console.log('Session validation error:', sessionError);
+                    // Still try to redirect, the dashboard will handle auth check
+                    setTimeout(() => {
+                        redirectTo('/dashboard');
+                    }, 1000);
+                }
                 return;
             }
 

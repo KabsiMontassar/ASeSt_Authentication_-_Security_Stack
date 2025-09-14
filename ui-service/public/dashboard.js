@@ -29,8 +29,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (logoutBtn) {
         logoutBtn.addEventListener('click', async () => {
             try {
-                await fetch('/api/logout', { method: 'POST' });
+                showMessage && showMessage('messages', 'Logging out...', 'info');
+                
+                // Use axios with proper credentials
+                const logoutResponse = await axios.post('/api/logout', {}, {
+                    withCredentials: true,
+                    validateStatus: function (status) {
+                        return status >= 200 && status < 500; // Accept all responses
+                    }
+                });
+                
+                console.log('Logout response:', logoutResponse.status);
+                
+                // Clear cookies regardless of server response
                 clearAuthCookies();
+                
+                // Redirect to home
                 redirectTo('/');
             } catch (error) {
                 console.error('Logout error:', error);
