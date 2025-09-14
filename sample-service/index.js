@@ -28,7 +28,19 @@ let enforcer;
 async function initCasbin() {
   // Use PostgreSQL adapter for better production compatibility
   const PgAdapter = require('casbin-pg-adapter').default;
-  const adapter = await PgAdapter.newAdapter(process.env.DATABASE_URL);
+  
+  // Parse the DATABASE_URL to get connection details
+  const dbUrl = new URL(process.env.DATABASE_URL);
+  const dbConfig = {
+    host: dbUrl.hostname,
+    port: parseInt(dbUrl.port) || 5432,
+    user: dbUrl.username,
+    password: dbUrl.password,
+    database: dbUrl.pathname.slice(1), // Remove leading slash
+    ssl: false
+  };
+  
+  const adapter = await PgAdapter.newAdapter(dbConfig);
   
   enforcer = await newEnforcer('/app/config/casbin/model.conf', adapter);
   
