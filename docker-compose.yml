@@ -99,6 +99,7 @@ services:
 
   sample-service:
     build: ./sample-service
+    image: asest-sample-service:latest
     ports:
       - "8080:8080"
     volumes:
