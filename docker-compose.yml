@@ -84,7 +84,7 @@ services:
   vault:
     image: vault:1.12.0
     ports:
-      - "8201:8200"
+      - "8202:8202"
     volumes:
       - ./config/vault:/vault/config
       - vault_data:/vault/file
