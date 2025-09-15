@@ -311,9 +311,3 @@ Expected output:
 ✅ **Improved logout** - Comprehensive cookie clearing and Kratos logout flow  
 ✅ **Better error handling** - User-friendly messages and debugging info  
 ✅ **Updated UI** - Modern interface with real-time authentication status
-
----
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
